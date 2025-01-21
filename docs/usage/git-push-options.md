@@ -21,7 +21,13 @@ git push -o title="My Gist 123"
 
 ```shell
 git push -o description="This is my gist description"
+# For descriptions with special characters, you can use URL encoding
+git push -o description="Hello%20World%21"
 ```
+
+Note: If your description contains spaces or special characters, you can either:
+- Wrap it in quotes: `git push -o description="Hello World!"`
+- Use URL encoding: `git push -o description=Hello%20World%21`
 
 ## Change visibility
 

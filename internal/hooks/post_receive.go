@@ -7,6 +7,7 @@ import (
 	"github.com/thomiceli/opengist/internal/git"
 	validatorpkg "github.com/thomiceli/opengist/internal/validator"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
 	"slices"
@@ -66,8 +67,19 @@ func PostReceive(in io.Reader, out, er io.Writer) error {
 	}
 
 	if opts["description"] != "" && validator.Var(opts["description"], "max=1000") == nil {
-		gist.Description = opts["description"]
-		outputSb.WriteString(fmt.Sprintf("Gist description set to \"%s\"\n\n", opts["description"]))
+		// Remove surrounding quotes if present
+		description := strings.TrimSpace(opts["description"])
+		if len(description) >= 2 && description[0] == '"' && description[len(description)-1] == '"' {
+			description = description[1 : len(description)-1]
+		}
+
+		// URL decode if needed
+		if decodedDesc, err := url.QueryUnescape(description); err == nil {
+			description = decodedDesc
+		}
+
+		gist.Description = description
+		outputSb.WriteString(fmt.Sprintf("Gist description set to \"%s\"\n\n", description))
 	}
 
 	if hasNoCommits, err := git.HasNoCommits(gist.User.Username, gist.Uuid); err != nil {
