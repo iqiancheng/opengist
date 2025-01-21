@@ -62,24 +62,27 @@ func PostReceive(in io.Reader, out, er io.Writer) error {
 	}
 
 	if opts["title"] != "" && validator.Var(opts["title"], "max=250") == nil {
-		gist.Title = opts["title"]
-		outputSb.WriteString(fmt.Sprintf("Gist title set to \"%s\"\n\n", opts["title"]))
+		title := strings.TrimSpace(opts["title"])
+		if title != "null" {
+			gist.Title = title
+			outputSb.WriteString(fmt.Sprintf("Gist title set to \"%s\"\n\n", title))
+		}
 	}
 
 	if opts["description"] != "" && validator.Var(opts["description"], "max=1000") == nil {
-		// Remove surrounding quotes if present
 		description := strings.TrimSpace(opts["description"])
 		if len(description) >= 2 && description[0] == '"' && description[len(description)-1] == '"' {
 			description = description[1 : len(description)-1]
 		}
 
-		// URL decode if needed
 		if decodedDesc, err := url.QueryUnescape(description); err == nil {
 			description = decodedDesc
 		}
 
-		gist.Description = description
-		outputSb.WriteString(fmt.Sprintf("Gist description set to \"%s\"\n\n", description))
+		if description != "null" {
+			gist.Description = description
+			outputSb.WriteString(fmt.Sprintf("Gist description set to \"%s\"\n\n", description))
+		}
 	}
 
 	if hasNoCommits, err := git.HasNoCommits(gist.User.Username, gist.Uuid); err != nil {
